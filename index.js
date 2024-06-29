@@ -1,122 +1,120 @@
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
+const connection = require('./database/database.js');
+
+const Game = require("./game/Game.js");
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-var DB = {
-    games: [
-        {
-            id: 23,
-            title: "Call of Duty MW",
-            year: 2019,
-            price: 60
-        },
-        {
-            id: 65,
-            title: "Sea of Thieves",
-            year: 2018,
-            price: 40
-        },
-        {
-            id: 2,
-            title: "Minecraft",
-            year: 2012,
-            price: 20
-        }
-    ]
-}
+connection
+    .authenticate()
+    .then(() => {
+        console.log('BD conectado');
+    }).catch((error) => {
+        console.log(error);
+    });
 
-app.get("/games", (req,res) => {
-    res.statusCode = 200;
-    res.json(DB.games);
-});
-
-app.get("/games/:id", (req,res) => {
-    if(isNaN(req.params.id)){
-        res.sendStatus(400);
-    }else{
-        var id = parseInt(req.params.id);
-
-        var game = DB.games.find(game => game.id == id);
-        if(game !== undefined){
+app.get("/games", (req, res) => {
+    Game.findAll().then(games => {
+        if(games !== null){
             res.statusCode = 200;
-            res.json(game);
+            res.json(games);
         }else{
             res.sendStatus(404);
         }
-    }
+    });
 });
 
-app.delete("/game/:id", (req,res) => {
-    if(isNaN(req.params.id)){
-        console.log("teste1");
+app.get("/games/:id", (req, res) => {
+    if (isNaN(req.params.id)) {
         res.sendStatus(400);
-    }else{
+    } else {
         var id = parseInt(req.params.id);
-        console.log(id);
-        var index = DB.games.findIndex(game => game.id == id);
-        console.log(index);
-        
-        if(index === -1){
-            console.log("teste2");
-            res.sendStatus(404);
-        }else{
-            console.log("teste3");
-            DB.games.splice(index, 1);
-            res.sendStatus(200);
-        }
 
-    }
-});
-
-app.post("/game/:id", (req,res) => {
-    var { title, price, year } = req.body;
-    if((isNaN(price) || isNaN(year)) || (title === undefined || title === '') || (price === undefined || year === undefined)){
-        res.sendStatus(400);
-    }else{
-        DB.games.push({
-            id: 232,
-            title,
-            price,
-            year
+        Game.findOne({where: {id: id}}).then(game => {
+            if(game !== null){
+                res.statusCode = 200;
+                res.json(game);
+            }else{
+                res.sendStatus(404);
+            }
         });
-        res.sendStatus(200);
     }
 });
 
-app.put("/game/:id", (req,res) => {
-    if(isNaN(req.params.id)){
+app.delete("/game/:id", (req, res) => {
+    if (isNaN(req.params.id) || req.params.id === null) {
         res.sendStatus(400);
-    }else{
+    } else {
         var id = parseInt(req.params.id);
-        var game = DB.games.find(game => game.id == id);
+        Game.destroy({where: {id: id}})
+            .then(() => {
+                res.sendStatus(200);
+            }).catch((error) => {
+                console.log(error);
+                res.sendStatus(404);
+            });
+    }
+});
 
-        if(game !== undefined){
-            var { title, price, year } = req.body;
-            
-            if(title !== undefined){
-                game.title = title;
-            }
-            if(price !== undefined){
-                if(isNaN(price)){
+app.post("/game", (req, res) => {
+    var { title, price, year } = req.body;
+    if ((isNaN(price) || isNaN(year)) || (title === undefined || title === '') || (price === undefined || year === undefined)) {
+        res.sendStatus(400);
+    } else {
+        Game.findOne({where: {title: title}}).then(game => {
+            console.log(game);
+            if(game === null){
+                Game.create({
+                    title: title,
+                    price: price,
+                    year: year
+                }).then(() => {
+                    res.sendStatus(200);
+                }).catch((error) => {
+                    console.log(error);
                     res.sendStatus(400);
-                }else{
-                    game.price = price;
-                }
+                });
+            }else{
+                res.sendStatus(409);
             }
-            if(year !== undefined){
-                if(isNaN(year)){
-                    res.sendStatus(400);
-                }else{
-                    game.year = year;
+        });
+    }
+});
+
+app.put("/game/:id", (req, res) => {
+    if (isNaN(req.params.id)) {
+        res.sendStatus(400);
+    } else {
+        var id = parseInt(req.params.id);
+        Game.findOne({where: {id: id}}).then(game => {
+            if(game !== null){
+                var { title, price, year } = req.body;
+                if (title !== undefined) {
+                    game.title = title;
                 }
+                if (price !== undefined) {
+                    if (isNaN(price)) {
+                        res.sendStatus(400);
+                    } else {
+                        game.price = price;
+                    }
+                }
+                if (year !== undefined) {
+                    if (isNaN(year)) {
+                        res.sendStatus(400);
+                    } else {
+                        game.year = year;
+                    }
+                }
+                game.save();
+                res.sendStatus(200);
+            }else{
+                res.sendStatus(404);
             }
-            res.sendStatus(200);
-        }else{
-            res.sendStatus(404);
-        }
+        });
     }
 });
 
