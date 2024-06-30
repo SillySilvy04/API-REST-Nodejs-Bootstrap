@@ -3,6 +3,7 @@ const app = express();
 const bodyParser = require('body-parser');
 const connection = require('./database/database.js');
 const jwt = require('jsonwebtoken');
+const cors = require('cors');
 
 const auth = require('./middlewares/auth.js');
 const JWTSecret = require('./passwords/jwtSecret.js');
@@ -12,6 +13,7 @@ const User = require("./user/User.js");
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(cors());
 
 connection
     .authenticate()
@@ -21,7 +23,7 @@ connection
         console.log(error);
     });
 
-app.get("/games",auth, (req, res) => { 
+app.get("/games", (req, res) => { 
     Game.findAll().then(games => {
         if(games !== null){
             res.statusCode = 200;
@@ -32,7 +34,7 @@ app.get("/games",auth, (req, res) => {
     });
 });
 
-app.get("/games/:id",auth, (req, res) => {
+app.get("/games/:id", (req, res) => {
     if (isNaN(req.params.id)) {
         res.sendStatus(400);
     } else {
@@ -56,7 +58,7 @@ app.delete("/game/:id", (req, res) => {
         var id = parseInt(req.params.id);
         Game.destroy({where: {id: id}})
             .then(() => {
-                res.sendStatus(200);
+                res.sendStatus(204);
             }).catch((error) => {
                 console.log(error);
                 res.sendStatus(404);
@@ -76,7 +78,7 @@ app.post("/game", (req, res) => {
                     price: price,
                     year: year
                 }).then(() => {
-                    res.sendStatus(200);
+                    res.sendStatus(201);
                 }).catch((error) => {
                     console.log(error);
                     res.sendStatus(400);
@@ -129,7 +131,7 @@ app.put("/game/:id", (req, res) => {
 app.post("/auth",(req,res) => {
     if((req.body.login !== null && req.body.login !== "") && 
     (req.body.password !== null && req.body.password !== "")){
-        var user = User.findOne({where: {
+        User.findOne({where: {
             login: req.body.login
         }}).then(user => {
             if(user !== null){
