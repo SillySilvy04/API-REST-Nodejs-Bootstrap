@@ -2,6 +2,10 @@ const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
 const connection = require('./database/database.js');
+const jwt = require('jsonwebtoken');
+
+const auth = require('./middlewares/auth.js');
+const JWTSecret = require('./passwords/jwtSecret.js');
 
 const Game = require("./game/Game.js");
 const User = require("./user/User.js");
@@ -17,7 +21,7 @@ connection
         console.log(error);
     });
 
-app.get("/games", (req, res) => {
+app.get("/games",auth, (req, res) => { 
     Game.findAll().then(games => {
         if(games !== null){
             res.statusCode = 200;
@@ -28,7 +32,7 @@ app.get("/games", (req, res) => {
     });
 });
 
-app.get("/games/:id", (req, res) => {
+app.get("/games/:id",auth, (req, res) => {
     if (isNaN(req.params.id)) {
         res.sendStatus(400);
     } else {
@@ -122,8 +126,32 @@ app.put("/game/:id", (req, res) => {
 
 //user routes
 
-app.post("auth",(req,res) => {
-
+app.post("/auth",(req,res) => {
+    if((req.body.login !== null && req.body.login !== "") && 
+    (req.body.password !== null && req.body.password !== "")){
+        var user = User.findOne({where: {
+            login: req.body.login
+        }}).then(user => {
+            if(user !== null){
+                if(user.password === req.body.password){
+                    jwt.sign({id: user.id, login: user.login}, JWTSecret, {expiresIn: '24h'}, (err, token) => {
+                        if(err){
+                            res.sendStatus(400);
+                        }else{
+                            res.statusCode = 200;
+                            res.json({token: token});
+                        }
+                    });
+                }else{
+                    res.sendStatus(401);
+                }
+            }else{
+                res.sendStatus(404);
+            }
+        });
+    }else{
+        res.sendStatus(400);
+    }
 });
 
 app.get("/users", (req, res) => {
@@ -170,9 +198,6 @@ app.delete("/user/:id", (req, res) => {
 
 app.post("/user", (req, res) => {
     var { login, password, name } = req.body;
-    console.log(login);
-    console.log(password);
-    console.log(name);
     if ((login === undefined || login === '') || 
     (password === undefined || password === '') || 
     (name === undefined || name === '')) {
