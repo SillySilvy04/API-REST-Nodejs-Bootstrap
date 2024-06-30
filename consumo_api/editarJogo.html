@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+        integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+</head>
+
+<body>
+    <nav class="navbar navbar-light bg-light justify-content-between">
+        <a href="./index.html" class="navbar-brand">API Jogos</a>
+        <div class="row">
+            <a class="nav-link col-sm navbar-brand" href="#">Login <span class="sr-only">(current)</span></a>
+            <a class="nav-link col-lg navbar-brand" href="#">Registrar-se <span class="sr-only">(current)</span></a>
+        </div>
+    </nav>
+    <div class="container mt-5">
+        <form>
+            <div class="form-group">
+                <label for="id">ID</label>
+                <input type="text" class="form-control" id="id" placeholder="ID" readonly>
+            </div>
+            <div class="form-group">
+                <label for="title">Nome</label>
+                <input type="text" class="form-control" id="title" placeholder="Nome do jogo">
+            </div>
+            <div class="form-group">
+                <label for="year">Ano</label>
+                <input type="number" class="form-control" id="year" placeholder="Ano de lançamento do jogo">
+            </div>
+            <div class="form-group">
+                <label for="price">Preço</label>
+                <input type="text" class="form-control" id="price" placeholder="Preço do jogo">
+            </div>
+            <button type="submit" class="btn btn-primary" onclick="updateGame()">Cadastrar</button>
+        </form>
+    </div>
+</body>
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+    integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+    crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
+    integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+    crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
+    integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+    crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+    const id = new URLSearchParams(window.location.search).get('id');
+
+    function updateGame() {
+        event.preventDefault();
+        var idInput = document.getElementById('id');
+        var titleInput = document.getElementById('title');
+        var yearInput = document.getElementById('year');
+        var priceInput = document.getElementById('price');
+
+        var game = {
+            title: titleInput.value,
+            year: yearInput.value,
+            price: priceInput.value
+        };
+
+        var id = idInput.value.toString();
+
+        console.log(id);
+        console.log(game);
+
+        axios.put(`http://localhost:8080/game/${id}`, game)
+            .then(response => {
+                if (response.status == 200) {
+                    alert('Jogo editado com sucesso!');
+                    window.location.href = './index.html';
+                }
+            })
+            .catch(error => {
+                console.log(error);
+            });
+    }
+
+    axios.get(`http://localhost:8080/games/${id}`).then(response => {
+        let title = document.getElementById('title').value = response.data.title;
+        let year = document.getElementById('year').value = response.data.year;
+        let price = document.getElementById('price').value = response.data.price;
+
+        var idField = document.getElementById('id');
+        var titleField = document.getElementById('title');
+        var yearField = document.getElementById('year');
+        var priceField = document.getElementById('price');
+
+        idField.value = response.data.id;
+        titleField.value = response.data.title;
+        yearField.value = response.data.year;
+        priceField.value = response.data.price;
+    }).catch(error => {
+        console.log(error);
+    });
+</script>
+
+</html>
