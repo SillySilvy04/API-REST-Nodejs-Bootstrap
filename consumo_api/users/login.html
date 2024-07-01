@@ -9,7 +9,7 @@
 </head>
 <body>
     <nav class="navbar navbar-light bg-light justify-content-between">
-        <a href="./index.html" class="navbar-brand">API Jogos</a>
+        <a href="../index.html" class="navbar-brand">API Jogos</a>
     </nav>
     <div class="container mt-5">
     <div class="container">
@@ -40,35 +40,6 @@
     integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
     crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-<script>
-    function auth(){
-        var axiosConfig = {
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem('token')}`
-            }
-        };
-
-        var email = document.getElementById('email').value;
-        var password = document.getElementById('password').value;
-        axios.post('http://localhost:8080/auth', {
-            login: email, 
-            password: password
-        }).then(response => {
-            if(response.status == 200){
-                var token = response.data.token;
-                localStorage.setItem('token', token);
-                axiosConfig = {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('token')}`
-                    }
-                };
-                alert('Usuário autenticado com sucesso!');
-                window.location.href = './index.html';
-                console.log(response.data);
-            }
-        }).catch(error => {
-            console.log(error);
-        });
-    }
-</script>
+<script src="../scripts/routes.js"></script>
+<script src="../scripts/scriptUser.js"></script>
 </html>

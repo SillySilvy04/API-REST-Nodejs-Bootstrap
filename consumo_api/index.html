@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Lista de Jogos</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
         integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
 </head>
@@ -39,113 +39,12 @@
     integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
     crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="./scripts/routes.js"></script>
+<script src="./scripts/scriptGames.js"></script>
+<script src="./scripts/scriptUser.js"></script>
 <script>
-    function deleteGame(listItem) {
-        var axiosConfig = {
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem('token')}`
-            }
-        };
-        if (confirm('Deseja realmente excluir este jogo?')) {
-            var id = listItem.getAttribute('data-id');
-            axios.delete(`http://localhost:8080/game/${id}`,axiosConfig).then(response => {
-                if (response.status == 204) {
-                    alert('Jogo excluído com sucesso!');
-                    listItem.remove();
-                }
-            }).catch(error => {
-                console.log(error);
-            });
-        }
-    }
-
-    function logout() {
-        localStorage.removeItem('token');
-        window.location.href = './index.html';
-    }
-
-    function startPage() {
-        var token = localStorage.getItem('token');
-        if (!token) {
-            var link = document.createElement('div');
-            link.innerHTML = `
-                    <a class="nav-link col-sm navbar-brand" href="./login.html">Login <span class="sr-only">(current)</span></a>
-            <a class="nav-link col-lg navbar-brand" href="./criarUsuario.html">Registrar-se <span class="sr-only">(current)</span></a>
-                `;
-            link.classList.add('row');
-
-            var navBar = document.getElementById('navBar');
-            navBar.appendChild(link);
-
-        } else {
-            var link = document.createElement('div');
-            link.innerHTML = `
-                    <button onclick="logout()" type="button" class="btn btn-outline-danger">Logout</button>
-                `;
-            link.addEventListener('click', () => {
-                localStorage.removeItem('token');
-            });
-            var navBar = document.getElementById('navBar');
-            navBar.appendChild(link);
-
-            var container = document.getElementById('container');
-            var btnCreate = document.createElement('a');
-            btnCreate.innerHTML = '<a href="./cadastroJogo.html" class="align-self-center mr-auto btn btn-success mx-auto">Cadastrar novo </a>';
-            container.appendChild(btnCreate);
-
-            var thd = document.getElementById('table-head-row');
-            var th = document.createElement('th');
-            th.innerHTML = '<th scope="col">Opções</th>';
-            thd.appendChild(th);
-        }
-    }
     startPage();
-
-    axios.get('http://localhost:8080/games')
-        .then(response => {
-            var token = localStorage.getItem('token');
-            var list = document.getElementById('gamesTable');
-            response.data.forEach(game => {
-                var item = document.createElement('tr');
-                item.setAttribute('data-id', game.id);
-                item.setAttribute('data-title', game.title);
-                item.setAttribute('data-price', game.price);
-                item.setAttribute('data-year', game.year);
-                item.innerHTML = `
-                        <th>${game.id}</th>
-                        <td>${game.title}</td>
-                        <td>${game.price}</td>
-                        <td>${game.year}</td>
-                    `;
-
-                if (token) {
-                    var td = document.createElement('td');
-                    deleteButton = document.createElement('button');
-                    deleteButton.classList.add('btn', 'btn-danger', "d-inline-block");
-                    deleteButton.innerText = 'Excluir';
-                    deleteButton.addEventListener("click", () => {
-                        deleteGame(item);
-                    });
-                    td.appendChild(deleteButton);
-                }
-
-                if (token) {
-                    var editTd = document.createElement('td');
-                    editButton = document.createElement('a');
-                    editButton.classList.add('btn', 'btn-warning', "d-inline-block", "ml-5");
-                    editButton.innerText = 'Editar';
-                    editButton.href = `./editarJogo.html?id=${game.id}`;
-                    td.appendChild(editButton);
-                    td.classList.add('d-inline-block', "d-flex", "justify-content-center");
-                    item.appendChild(td);
-                }
-
-                list.appendChild(item);
-            });
-        })
-        .catch(error => {
-            console.log(error);
-        });
+    getGames();
 </script>
 
 </html>

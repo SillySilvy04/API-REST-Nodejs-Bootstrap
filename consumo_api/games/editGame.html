@@ -4,20 +4,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Editar Jogo</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
         integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
 </head>
 
 <body>
     <nav class="navbar navbar-light bg-light justify-content-between">
-        <a href="./index.html" class="navbar-brand">API Jogos</a>
+        <a href="../index.html" class="navbar-brand">API Jogos</a>
         <div class="row">
-            <button onclick="logout()" type="button" class="btn btn-outline-danger">Logout</button>
+            <button onclick="logout2()" type="button" class="btn btn-outline-danger">Logout</button>
         </div>
     </nav>
     <div class="container mt-5">
         <form>
+            <div class="form-group">
+                <label for="id">ID</label>
+                <input type="text" class="form-control" id="id" placeholder="ID" readonly>
+            </div>
             <div class="form-group">
                 <label for="title">Nome</label>
                 <input type="text" class="form-control" id="title" placeholder="Nome do jogo">
@@ -30,7 +34,7 @@
                 <label for="price">Preço</label>
                 <input type="text" class="form-control" id="price" placeholder="Preço do jogo">
             </div>
-            <button type="submit" class="btn btn-primary" onclick="createGame()">Cadastrar</button>
+            <button type="submit" class="btn btn-primary" onclick="updateGame()">Atualizar</button>
         </form>
     </div>
 </body>
@@ -44,41 +48,11 @@
     integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
     crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="../scripts/routes.js"></script>
+<script src="../scripts/scriptUser.js"></script>
+<script src="../scripts/scriptGames.js"></script>
 <script>
-    var axiosConfig = {
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem('token')}`
-            }
-        };
-
-    function createGame() {
-        event.preventDefault();
-        var titleInput = document.getElementById('title');
-        var yearInput = document.getElementById('year');
-        var priceInput = document.getElementById('price');
-
-        var game = {
-            title: titleInput.value,
-            year: yearInput.value,
-            price: priceInput.value
-        };
-
-        axios.post('http://localhost:8080/game',game,axiosConfig)
-            .then(response => {
-                if (response.status == 201) {
-                    alert('Jogo criado com sucesso!');
-                    window.location.href = './index.html';
-                }
-            })
-            .catch(error => {
-                console.log(error);
-            });
-    }
-
-    function logout() {
-        localStorage.removeItem('token');
-        window.location.href = './index.html';
-    }
+    getGamesId();  
 </script>
 
 </html>

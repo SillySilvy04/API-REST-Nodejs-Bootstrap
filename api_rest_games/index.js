@@ -200,10 +200,12 @@ app.delete("/user/:id", (req, res) => {
 
 app.post("/user", (req, res) => {
     var { login, password, name } = req.body;
+    console.log(login);
+    console.log(password);
+    console.log(name);
     if ((login === undefined || login === '') || 
     (password === undefined || password === '') || 
     (name === undefined || name === '')) {
-        console.log("teste")
         res.sendStatus(400);
     } else {
         User.findOne({where: {
