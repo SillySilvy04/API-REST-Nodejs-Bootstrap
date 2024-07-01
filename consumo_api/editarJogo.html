@@ -13,8 +13,7 @@
     <nav class="navbar navbar-light bg-light justify-content-between">
         <a href="./index.html" class="navbar-brand">API Jogos</a>
         <div class="row">
-            <a class="nav-link col-sm navbar-brand" href="#">Login <span class="sr-only">(current)</span></a>
-            <a class="nav-link col-lg navbar-brand" href="#">Registrar-se <span class="sr-only">(current)</span></a>
+            <button onclick="logout()" type="button" class="btn btn-outline-danger">Logout</button>
         </div>
     </nav>
     <div class="container mt-5">
@@ -35,7 +34,7 @@
                 <label for="price">Preço</label>
                 <input type="text" class="form-control" id="price" placeholder="Preço do jogo">
             </div>
-            <button type="submit" class="btn btn-primary" onclick="updateGame()">Cadastrar</button>
+            <button type="submit" class="btn btn-primary" onclick="updateGame()">Atualizar</button>
         </form>
     </div>
 </body>
@@ -52,6 +51,17 @@
 <script>
     const id = new URLSearchParams(window.location.search).get('id');
 
+    var axiosConfig = {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`
+            }
+        };
+
+    function logout() {
+        localStorage.removeItem('token');
+        window.location.href = './index.html';
+    }
+
     function updateGame() {
         event.preventDefault();
         var idInput = document.getElementById('id');
@@ -67,17 +77,18 @@
 
         var id = idInput.value.toString();
 
-        console.log(id);
-        console.log(game);
+        console.log(axiosConfig);
 
-        axios.put(`http://localhost:8080/game/${id}`, game)
+        axios.put("http://localhost:8080/game/"+id, game, axiosConfig)
             .then(response => {
+                event.preventDefault();
                 if (response.status == 200) {
                     alert('Jogo editado com sucesso!');
                     window.location.href = './index.html';
                 }
             })
             .catch(error => {
+                console.log("teste");
                 console.log(error);
             });
     }

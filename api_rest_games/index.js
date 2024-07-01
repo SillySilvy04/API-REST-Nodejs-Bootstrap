@@ -51,7 +51,7 @@ app.get("/games/:id", (req, res) => {
     }
 });
 
-app.delete("/game/:id", (req, res) => {
+app.delete("/game/:id",auth, (req, res) => {
     if (isNaN(req.params.id) || req.params.id === null) {
         res.sendStatus(400);
     } else {
@@ -66,7 +66,7 @@ app.delete("/game/:id", (req, res) => {
     }
 });
 
-app.post("/game", (req, res) => {
+app.post("/game",auth, (req, res) => {
     var { title, price, year } = req.body;
     if ((isNaN(price) || isNaN(year)) || (title === undefined || title === '') || (price === undefined || year === undefined)) {
         res.sendStatus(400);
@@ -90,7 +90,7 @@ app.post("/game", (req, res) => {
     }
 });
 
-app.put("/game/:id", (req, res) => {
+app.put("/game/:id",auth, (req, res) => {
     if (isNaN(req.params.id)) {
         res.sendStatus(400);
     } else {
@@ -126,7 +126,7 @@ app.put("/game/:id", (req, res) => {
     }
 });
 
-//user routes
+//user routes 
 
 app.post("/auth",(req,res) => {
     if((req.body.login !== null && req.body.login !== "") && 
@@ -216,7 +216,7 @@ app.post("/user", (req, res) => {
                     password: password,
                     name: name
                 }).then(() => {
-                    res.sendStatus(200);
+                    res.sendStatus(201);
                 }).catch((error) => {
                     console.log(error);
                     res.sendStatus(400);

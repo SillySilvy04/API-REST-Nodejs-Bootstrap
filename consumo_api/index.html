@@ -1,72 +1,124 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+        integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
 </head>
+
 <body>
-    <nav class="navbar navbar-light bg-light justify-content-between">
+    <nav id="navBar" class="navbar navbar-light bg-light justify-content-between">
         <a href="./index.html" class="navbar-brand">API Jogos</a>
-        <div class="row">
-            <a class="nav-link col-sm navbar-brand" href="#">Login <span class="sr-only">(current)</span></a>
-            <a class="nav-link col-lg navbar-brand" href="#">Registrar-se <span class="sr-only">(current)</span></a>
-        </div>
-      </nav>
-    
-    <div class="container mt-5 d-flex justify-content-center flex-column">
+    </nav>
+
+    <div id="container" class="container mt-5 d-flex justify-content-center flex-column align-items-center">
         <table class="table table-bordered">
             <thead>
-              <tr>
-                <th scope="col">#ID</th>
-                <th scope="col">Nome</th>
-                <th scope="col">Preço</th>
-                <th scope="col">Ano</th>
-                <th scope="col">Opções</th>
-              </tr>
+                <tr id="table-head-row">
+                    <th scope="col">#ID</th>
+                    <th scope="col">Nome</th>
+                    <th scope="col">Preço</th>
+                    <th scope="col">Ano</th>
+                </tr>
             </thead>
             <tbody id="gamesTable">
             </tbody>
-          </table>
-          <a href="./cadastroJogo.html" class="btn btn-success mx-auto">Cadastrar novo </a>
+        </table>
     </div>
 </body>
-<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+    integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+    crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
+    integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+    crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
+    integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+    crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script>
-    function deleteGame(listItem){
-            if(confirm('Deseja realmente excluir este jogo?')){
-                var id = listItem.getAttribute('data-id'); 
-            axios.delete(`http://localhost:8080/game/${id}`).then(response => {
-                if(response.status == 204){
+    function deleteGame(listItem) {
+        var axiosConfig = {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`
+            }
+        };
+        if (confirm('Deseja realmente excluir este jogo?')) {
+            var id = listItem.getAttribute('data-id');
+            axios.delete(`http://localhost:8080/game/${id}`,axiosConfig).then(response => {
+                if (response.status == 204) {
                     alert('Jogo excluído com sucesso!');
                     listItem.remove();
                 }
             }).catch(error => {
                 console.log(error);
             });
-            }
         }
+    }
+
+    function logout() {
+        localStorage.removeItem('token');
+        window.location.href = './index.html';
+    }
+
+    function startPage() {
+        var token = localStorage.getItem('token');
+        if (!token) {
+            var link = document.createElement('div');
+            link.innerHTML = `
+                    <a class="nav-link col-sm navbar-brand" href="./login.html">Login <span class="sr-only">(current)</span></a>
+            <a class="nav-link col-lg navbar-brand" href="./criarUsuario.html">Registrar-se <span class="sr-only">(current)</span></a>
+                `;
+            link.classList.add('row');
+
+            var navBar = document.getElementById('navBar');
+            navBar.appendChild(link);
+
+        } else {
+            var link = document.createElement('div');
+            link.innerHTML = `
+                    <button onclick="logout()" type="button" class="btn btn-outline-danger">Logout</button>
+                `;
+            link.addEventListener('click', () => {
+                localStorage.removeItem('token');
+            });
+            var navBar = document.getElementById('navBar');
+            navBar.appendChild(link);
+
+            var container = document.getElementById('container');
+            var btnCreate = document.createElement('a');
+            btnCreate.innerHTML = '<a href="./cadastroJogo.html" class="align-self-center mr-auto btn btn-success mx-auto">Cadastrar novo </a>';
+            container.appendChild(btnCreate);
+
+            var thd = document.getElementById('table-head-row');
+            var th = document.createElement('th');
+            th.innerHTML = '<th scope="col">Opções</th>';
+            thd.appendChild(th);
+        }
+    }
+    startPage();
 
     axios.get('http://localhost:8080/games')
-            .then(response => {
-                var list = document.getElementById('gamesTable');
-                response.data.forEach(game => {
-                    var item = document.createElement('tr');
-                    item.setAttribute('data-id', game.id);
-                    item.setAttribute('data-title', game.title);
-                    item.setAttribute('data-price', game.price);
-                    item.setAttribute('data-year', game.year);
-                    item.innerHTML = `
+        .then(response => {
+            var token = localStorage.getItem('token');
+            var list = document.getElementById('gamesTable');
+            response.data.forEach(game => {
+                var item = document.createElement('tr');
+                item.setAttribute('data-id', game.id);
+                item.setAttribute('data-title', game.title);
+                item.setAttribute('data-price', game.price);
+                item.setAttribute('data-year', game.year);
+                item.innerHTML = `
                         <th>${game.id}</th>
                         <td>${game.title}</td>
                         <td>${game.price}</td>
                         <td>${game.year}</td>
                     `;
 
+                if (token) {
                     var td = document.createElement('td');
                     deleteButton = document.createElement('button');
                     deleteButton.classList.add('btn', 'btn-danger', "d-inline-block");
@@ -75,7 +127,9 @@
                         deleteGame(item);
                     });
                     td.appendChild(deleteButton);
+                }
 
+                if (token) {
                     var editTd = document.createElement('td');
                     editButton = document.createElement('a');
                     editButton.classList.add('btn', 'btn-warning', "d-inline-block", "ml-5");
@@ -84,12 +138,14 @@
                     td.appendChild(editButton);
                     td.classList.add('d-inline-block', "d-flex", "justify-content-center");
                     item.appendChild(td);
+                }
 
-                    list.appendChild(item);
-                });
-            })
-            .catch(error => {
-                console.log(error);
+                list.appendChild(item);
             });
+        })
+        .catch(error => {
+            console.log(error);
+        });
 </script>
+
 </html>
