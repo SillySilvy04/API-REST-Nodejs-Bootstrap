@@ -3,6 +3,7 @@ const app = express();
 const bodyParser = require('body-parser');
 const connection = require('./database/database.js');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 const cors = require('cors');
 
 const auth = require('./middlewares/auth.js');
@@ -23,12 +24,12 @@ connection
         console.log(error);
     });
 
-app.get("/games", (req, res) => { 
+app.get("/games", (req, res) => {
     Game.findAll().then(games => {
-        if(games !== null){
+        if (games !== null) {
             res.statusCode = 200;
             res.json(games);
-        }else{
+        } else {
             res.sendStatus(404);
         }
     });
@@ -40,23 +41,23 @@ app.get("/games/:id", (req, res) => {
     } else {
         var id = parseInt(req.params.id);
 
-        Game.findOne({where: {id: id}}).then(game => {
-            if(game !== null){
+        Game.findOne({ where: { id: id } }).then(game => {
+            if (game !== null) {
                 res.statusCode = 200;
                 res.json(game);
-            }else{
+            } else {
                 res.sendStatus(404);
             }
         });
     }
 });
 
-app.delete("/game/:id",auth, (req, res) => {
+app.delete("/game/:id", auth, (req, res) => {
     if (isNaN(req.params.id) || req.params.id === null) {
         res.sendStatus(400);
     } else {
         var id = parseInt(req.params.id);
-        Game.destroy({where: {id: id}})
+        Game.destroy({ where: { id: id } })
             .then(() => {
                 res.sendStatus(204);
             }).catch((error) => {
@@ -66,13 +67,13 @@ app.delete("/game/:id",auth, (req, res) => {
     }
 });
 
-app.post("/game",auth, (req, res) => {
+app.post("/game", auth, (req, res) => {
     var { title, price, year } = req.body;
     if ((isNaN(price) || isNaN(year)) || (title === undefined || title === '') || (price === undefined || year === undefined)) {
         res.sendStatus(400);
     } else {
-        Game.findOne({where: {title: title}}).then(game => {
-            if(game === null){
+        Game.findOne({ where: { title: title } }).then(game => {
+            if (game === null) {
                 Game.create({
                     title: title,
                     price: price,
@@ -83,21 +84,21 @@ app.post("/game",auth, (req, res) => {
                     console.log(error);
                     res.sendStatus(400);
                 });
-            }else{
+            } else {
                 res.sendStatus(409);
             }
         });
     }
 });
 
-app.put("/game/:id",auth, (req, res) => {
+app.put("/game/:id", auth, (req, res) => {
     if (isNaN(req.params.id)) {
         res.sendStatus(400);
     } else {
         var id = parseInt(req.params.id);
 
-        Game.findOne({where: {id: id}}).then(game => {
-            if(game !== null){
+        Game.findOne({ where: { id: id } }).then(game => {
+            if (game !== null) {
                 var { title, price, year } = req.body;
                 if (title !== undefined) {
                     game.title = title;
@@ -118,50 +119,53 @@ app.put("/game/:id",auth, (req, res) => {
                 }
                 game.save();
                 res.sendStatus(200);
-            }else{
+            } else {
                 res.sendStatus(404);
             }
-        
+
         });
     }
 });
 
 //user routes 
 
-app.post("/auth",(req,res) => {
-    if((req.body.login !== null && req.body.login !== "") && 
-    (req.body.password !== null && req.body.password !== "")){
-        User.findOne({where: {
-            login: req.body.login
-        }}).then(user => {
-            if(user !== null){
-                if(user.password === req.body.password){
-                    jwt.sign({id: user.id, login: user.login}, JWTSecret, {expiresIn: '24h'}, (err, token) => {
-                        if(err){
+app.post("/auth", (req, res) => {
+    if ((req.body.login !== null && req.body.login !== "") &&
+        (req.body.password !== null && req.body.password !== "")) {
+        User.findOne({
+            where: {
+                login: req.body.login
+            }
+        }).then(user => {
+            if (user !== null) {
+                var correct = bcrypt.compareSync(req.body.password, user.password);
+                if (correct) {
+                    jwt.sign({ id: user.id, login: user.login }, JWTSecret, { expiresIn: '24h' }, (err, token) => {
+                        if (err) {
                             res.sendStatus(400);
-                        }else{
+                        } else {
                             res.statusCode = 200;
-                            res.json({token: token});
+                            res.json({ token: token });
                         }
                     });
-                }else{
+                } else {
                     res.sendStatus(401);
                 }
-            }else{
+            } else {
                 res.sendStatus(404);
             }
         });
-    }else{
+    } else {
         res.sendStatus(400);
     }
 });
 
 app.get("/users", (req, res) => {
     User.findAll().then(users => {
-        if(users !== null){
+        if (users !== null) {
             res.statusCode = 200;
             res.json(users);
-        }else{
+        } else {
             res.sendStatus(404);
         }
     });
@@ -173,11 +177,11 @@ app.get("/user/:id", (req, res) => {
     } else {
         var id = parseInt(req.params.id);
 
-        User.findOne({where: {id: id}}).then(user => {
-            if(user !== null){
+        User.findOne({ where: { id: id } }).then(user => {
+            if (user !== null) {
                 res.statusCode = 200;
                 res.json(user);
-            }else{
+            } else {
                 res.sendStatus(404);
             }
         });
@@ -188,7 +192,7 @@ app.delete("/user/:id", (req, res) => {
     if (isNaN(req.params.id) || req.params.id === null) {
         res.sendStatus(400);
     } else {
-        User.destroy({where: {id: req.params.id}})
+        User.destroy({ where: { id: req.params.id } })
             .then(() => {
                 res.sendStatus(200);
             }).catch((error) => {
@@ -200,22 +204,23 @@ app.delete("/user/:id", (req, res) => {
 
 app.post("/user", (req, res) => {
     var { login, password, name } = req.body;
-    console.log(login);
-    console.log(password);
-    console.log(name);
-    if ((login === undefined || login === '') || 
-    (password === undefined || password === '') || 
-    (name === undefined || name === '')) {
+    if ((login === undefined || login === '') ||
+        (password === undefined || password === '') ||
+        (name === undefined || name === '')) {
         res.sendStatus(400);
     } else {
-        User.findOne({where: {
-            login: login
-        }
-    }).then(user => {
-            if(user === null){
+        User.findOne({
+            where: {
+                login: login
+            }
+        }).then(user => {
+            if (user === null) {
+                var salt = bcrypt.genSaltSync(10);
+                var hash = bcrypt.hashSync(password, salt);
+
                 User.create({
                     login: login,
-                    password: password,
+                    password: hash,
                     name: name
                 }).then(() => {
                     res.sendStatus(201);
@@ -223,7 +228,7 @@ app.post("/user", (req, res) => {
                     console.log(error);
                     res.sendStatus(400);
                 });
-            }else{
+            } else {
                 res.sendStatus(409);
             }
         });
